@@ -1,0 +1,65 @@
+{
+  "name": "@pitboxdev/dynamic-store-redux",
+  "version": "0.0.1",
+  "description": "Dynamic slice factory built on top of Redux Toolkit for scalable, useState-like state management",
+  "main": "dist/index.js",
+  "module": "dist/index.mjs",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "type-check": "tsc --noEmit",
+    "lint": "eslint src --ext .ts,.tsx",
+    "prepublishOnly": "npm run build",
+    "release": "npm version patch && git push origin main --follow-tags && npm publish"
+  },
+  "keywords": [
+    "redux",
+    "redux-toolkit",
+    "rtk",
+    "pitboxdev",
+    "state-management",
+    "react",
+    "typescript",
+    "dynamic-store"
+  ],
+  "author": "Pitboxdev",
+  "license": "MIT",
+  "peerDependencies": {
+    "@reduxjs/toolkit": ">=2.0.0",
+    "react": ">=18.0.0",
+    "react-redux": ">=9.0.0"
+  },
+  "devDependencies": {
+    "@reduxjs/toolkit": "^2.5.1",
+    "@types/react": "^18.3.12",
+    "@typescript-eslint/eslint-plugin": "^8.0.0",
+    "@typescript-eslint/parser": "^8.0.0",
+    "eslint": "^9.0.0",
+    "react": "^18.3.1",
+    "react-redux": "^9.2.0",
+    "tsup": "^8.3.5",
+    "typescript": "^5.7.2"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/pitboxdev/dynamic-store-redux.git"
+  },
+  "bugs": {
+    "url": "https://github.com/pitboxdev/dynamic-store-redux/issues"
+  },
+  "homepage": "https://github.com/pitboxdev/dynamic-store-redux#readme",
+  "publishConfig": {
+    "access": "public"
+  }
+}
