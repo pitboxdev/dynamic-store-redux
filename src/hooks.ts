@@ -123,42 +123,14 @@ export function useDynamicSlice<T extends SliceState>(
 
     const { setData, resetData, getData } = useDynamicSliceActions<T>(sliceId);
 
-    return { data, setData, resetData, getData };
-}
-
-// ─── useDynamicSliceWithCleanup ───────────────────────────────────────────────
-
-/**
- * Same as `useDynamicSlice` but automatically calls `resetData` when the
- * component unmounts — useful when `config.resetOnUnmount` is `true`.
- *
- * Ideal for modal dialogs, wizard steps, or scoped edit forms.
- *
- * @example
- * ```tsx
- * function EditModal() {
- *   const { data, setData, resetData } = useDynamicSliceWithCleanup<FormState>(
- *     'editForm',
- *     { initialState: { name: '', email: '' }, resetOnUnmount: true },
- *   );
- *   // State resets automatically when the modal unmounts
- * }
- * ```
- */
-export function useDynamicSliceWithCleanup<T extends SliceState>(
-    sliceId: string,
-    config: SliceConfig<T>,
-): UseDynamicSliceReturn<T> {
-    const result = useDynamicSlice<T>(sliceId, config);
-
     useEffect(() => {
         return () => {
-            if (config.resetOnUnmount === true) {
-                result.resetData();
+            if (config.resetOnUnmount) {
+                resetData();
             }
         };
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [sliceId, config.resetOnUnmount]);
 
-    return result;
+    return { data, setData, resetData, getData };
 }

@@ -57,7 +57,6 @@ Whether you need to inject reducers dynamically on the fly or just want the simp
   - [Quick Start](#quick-start)
   - [Functional updater (`setData`)](#functional-updater-setdata)
   - [Examples](#examples)
-- [`useDynamicSliceWithCleanup`](#usedynamicslicewithcleanup)
 - [`useDynamicSliceActions`](#usedynamicsliceactions)
 - [Imperative helpers (outside React)](#imperative-helpers-outside-react)
 - [Navigation reset](#navigation-reset)
@@ -77,7 +76,7 @@ Whether you need to inject reducers dynamically on the fly or just want the simp
 |---|---|
 | **Dynamic injection** | Slices are registered lazily when the hook first renders |
 | **useState-like API** | `setData(obj)` or `setData((prev) => update)` |
-| **Auto-cleanup** | `useDynamicSliceWithCleanup` resets state on unmount |
+| **Auto-cleanup** | Optional `resetOnUnmount` config resets state on unmount |
 | **Actions without subscription** | `useDynamicSliceActions` returns setters and getter without subscribing |
 | **Navigation reset** | Non-persistent slices reset automatically on route changes |
 | **Imperative helpers** | Call `updateDynamicSlice` / `resetDynamicSlice` from anywhere |
@@ -323,24 +322,8 @@ function LoginForm() {
     </form>
   );
 }
-```
-
----
-
-## `useDynamicSliceWithCleanup`
-
-Same API as `useDynamicSlice` but calls `resetData` automatically when the component unmounts — useful for modal dialogs, wizard steps, or edit forms.
-
-```tsx
-import { useDynamicSliceWithCleanup } from '@pitboxdev/dynamic-store-redux';
-
-function EditModal() {
-  const { data, setData } = useDynamicSliceWithCleanup<FormState>('editForm', {
-    initialState: { name: '', email: '' },
-    resetOnUnmount: true,
-  });
-
-  // State resets automatically when the modal closes
+    </form>
+  );
 }
 ```
 
@@ -427,7 +410,7 @@ The middleware listens for actions whose `type` starts with `router/` or `@@rout
 |---|---|---|---|
 | `initialState` | `T` | — | **(required)** Initial values; also used when `resetData()` is called |
 | `persistOnNavigation` | `boolean` | `false` | Skip reset when `resetNonPersistentDynamicSlices()` is called |
-| `resetOnUnmount` | `boolean` | `false` | Auto-reset on unmount (`useDynamicSliceWithCleanup` only) |
+| `resetOnUnmount` | `boolean` | `false` | Auto-reset on unmount |
 
 ---
 
@@ -483,11 +466,7 @@ function RegistrationForm() {
 
 Returns `{ data: T, setData, resetData, getData: () => T }`.
 
----
-
-### `useDynamicSliceWithCleanup<T>(sliceId, config)`
-
-Same signature as `useDynamicSlice`. Calls `resetData()` on unmount when `config.resetOnUnmount` is `true`.
+Returns `{ data: T, setData, resetData, getData: () => T }`.
 
 ---
 

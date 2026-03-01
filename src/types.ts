@@ -18,14 +18,14 @@ export type SetStateAction<T extends SliceState> =
   | ((prevState: T) => Partial<T>);
 
 /**
- * Configuration options for useDynamicSlice / useDynamicSliceWithCleanup.
+ * Configuration options for useDynamicSlice.
  */
 export interface SliceConfig<T extends SliceState = SliceState> {
   /** Initial state values used on first mount and on resetData. */
   initialState: T;
   /** Keep state alive across navigation (not reset on resetNonPersistentDynamicSlices). */
   persistOnNavigation?: boolean;
-  /** Automatically reset state when the component unmounts (useDynamicSliceWithCleanup only). */
+  /** Automatically reset state when the component unmounts. */
   resetOnUnmount?: boolean;
 }
 
@@ -46,7 +46,7 @@ export interface UseDynamicSliceActionsReturn<T extends SliceState> {
 }
 
 /**
- * Return type of useDynamicSlice / useDynamicSliceWithCleanup.
+ * Return type of useDynamicSlice.
  */
 export interface UseDynamicSliceReturn<T extends SliceState>
   extends UseDynamicSliceActionsReturn<T> {

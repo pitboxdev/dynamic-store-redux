@@ -5,7 +5,6 @@ export type { RootState, AppDispatch } from "./store";
 // ─── Dynamic slice hooks ──────────────────────────────────────────────────────
 export {
   useDynamicSlice,
-  useDynamicSliceWithCleanup,
   useDynamicSliceActions,
 } from "./hooks";
 
