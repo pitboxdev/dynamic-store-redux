@@ -1,15 +1,41 @@
-# @pitboxdev/dynamic-store-redux
+<div align="center">
+  <h1>Dynamic Store Redux</h1>
+  <p>Dynamic slice factory built on top of <a href="https://redux-toolkit.js.org/">Redux Toolkit</a> — <code>useState</code>-like ergonomics with the full power of RTK.</p>
 
-> Dynamic slice factory built on top of [Redux Toolkit](https://redux-toolkit.js.org/) — `useState`-like ergonomics with the full power of RTK.
+  [![NPM Version](https://img.shields.io/npm/v/@pitboxdev/dynamic-store-redux?style=flat-square)](https://www.npmjs.com/package/@pitboxdev/dynamic-store-redux)
+  [![Downloads](https://img.shields.io/npm/dw/@pitboxdev/dynamic-store-redux?style=flat-square)](https://www.npmjs.com/package/@pitboxdev/dynamic-store-redux)
+  [![Bundle Size](https://img.shields.io/bundlephobia/minzip/@pitboxdev/dynamic-store-redux?style=flat-square)](https://bundlephobia.com/package/@pitboxdev/dynamic-store-redux)
+  [![License](https://img.shields.io/npm/l/@pitboxdev/dynamic-store-redux?style=flat-square)](https://www.npmjs.com/package/@pitboxdev/dynamic-store-redux)
+  ![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?style=flat-square&logo=typescript&logoColor=white)
 
-[![npm version](https://img.shields.io/npm/v/@pitboxdev/dynamic-store-redux.svg)](https://www.npmjs.com/package/@pitboxdev/dynamic-store-redux)
-[![license](https://img.shields.io/npm/l/@pitboxdev/dynamic-store-redux.svg)](./LICENSE)
-[![TypeScript](https://img.shields.io/badge/TypeScript-strict-blue.svg)](https://www.typescriptlang.org/)
+  <br />
+
+  [![Edit on CodeSandbox](https://codesandbox.io/static/img/play-codesandbox.svg)](https://codesandbox.io/)
+</div>
+
+---
+
+## ⚡ Features
+
+- 📦 **Tiny size**: minimal footprint, won't bloat your bundle.
+- 🔄 **Code-Splitting Ready**: perfect for micro-frontends and lazy-loaded modules. Inject reducers seamlessly exactly when you need them.
+- 🛡️ **100% Type-safe**: written in TypeScript with pristine type inference and autocomplete out of the box.
+- 🛠️ **DX First**: extremely simple API without boilerplate, keeping the standard React `useState` ergonomics.
+
+---
+
+## ❓ Motivation
+
+In modern SPAs, loading the entire global Redux store on the initial bootstrap causes poor performance and limits code-splitting capabilities. Standard Redux setup requires defining a static `combineReducers` schema upfront.
+
+`@pitboxdev/dynamic-store-redux` solves this by giving you a way to initialize and inject store slices on demand right when your component mounts. Say goodbye to bloated stores and cumbersome Redux boilerplate — just call `useDynamicSlice(initialState)` and get the same development experience as `useState`, fully connected to the Redux DevTools and a single robust data flow!
 
 ---
 
 ## Table of Contents
 
+- [⚡ Features](#-features)
+- [❓ Motivation](#-motivation)
 - [Overview](#overview)
 - [Installation](#installation)
 - [Setup](#setup)
