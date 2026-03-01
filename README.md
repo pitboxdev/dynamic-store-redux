@@ -1,34 +1,48 @@
 <div align="center">
-  <h1>Dynamic Store Redux</h1>
-  <p>Dynamic slice factory built on top of <a href="https://redux-toolkit.js.org/">Redux Toolkit</a> — <code>useState</code>-like ergonomics with the full power of RTK.</p>
 
-  [![NPM Version](https://img.shields.io/npm/v/@pitboxdev/dynamic-store-redux?style=flat-square)](https://www.npmjs.com/package/@pitboxdev/dynamic-store-redux)
-  [![Downloads](https://img.shields.io/npm/dw/@pitboxdev/dynamic-store-redux?style=flat-square)](https://www.npmjs.com/package/@pitboxdev/dynamic-store-redux)
-  [![Bundle Size](https://img.shields.io/bundlephobia/minzip/@pitboxdev/dynamic-store-redux?style=flat-square)](https://bundlephobia.com/package/@pitboxdev/dynamic-store-redux)
-  [![License](https://img.shields.io/npm/l/@pitboxdev/dynamic-store-redux?style=flat-square)](https://www.npmjs.com/package/@pitboxdev/dynamic-store-redux)
-  ![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?style=flat-square&logo=typescript&logoColor=white)
+# @pitboxdev/dynamic-store-redux
 
-  <br />
+> Dynamic slice factory built on top of [Redux Toolkit](https://redux-toolkit.js.org/) — `useState`-like ergonomics with the full power of RTK.
 
-  [![Edit on CodeSandbox](https://codesandbox.io/static/img/play-codesandbox.svg)](https://codesandbox.io/)
+<p align="center">
+  <a href="https://www.npmjs.com/package/@pitboxdev/dynamic-store-redux">
+    <img src="https://img.shields.io/npm/v/@pitboxdev/dynamic-store-redux?style=flat-square" alt="NPM Version" />
+  </a>
+  <a href="https://www.npmjs.com/package/@pitboxdev/dynamic-store-redux">
+    <img src="https://img.shields.io/npm/dw/@pitboxdev/dynamic-store-redux?style=flat-square" alt="NPM Downloads" />
+  </a>
+  <a href="https://bundlephobia.com/package/@pitboxdev/dynamic-store-redux">
+    <img src="https://img.shields.io/bundlephobia/minzip/@pitboxdev/dynamic-store-redux?style=flat-square&label=minzipped" alt="Bundle Size" />
+  </a>
+  <a href="https://www.typescriptlang.org/">
+    <img src="https://img.shields.io/badge/TypeScript-Strict-3178C6?style=flat-square&logo=typescript&logoColor=white" alt="TypeScript Strict" />
+  </a>
+  <a href="https://www.npmjs.com/package/@pitboxdev/dynamic-store-redux">
+    <img src="https://img.shields.io/npm/l/@pitboxdev/dynamic-store-redux?style=flat-square" alt="License MIT" />
+  </a>
+</p>
+
 </div>
 
 ---
 
 ## ⚡ Features
 
-- 📦 **Tiny size**: minimal footprint, won't bloat your bundle.
-- 🔄 **Code-Splitting Ready**: perfect for micro-frontends and lazy-loaded modules. Inject reducers seamlessly exactly when you need them.
-- 🛡️ **100% Type-safe**: written in TypeScript with pristine type inference and autocomplete out of the box.
-- 🛠️ **DX First**: extremely simple API without boilerplate, keeping the standard React `useState` ergonomics.
+- 🛠️ **DX First (Zero Boilerplate):** Extremely simple API without boilerplate, keeping the standard React `useState` ergonomics.
+- 🧹 **Auto-Cleanup:** Built-in hooks for automatic store resets on unmount.
+- 🔄 **Code-Splitting Ready:** Perfect for micro-frontends and lazy-loaded modules. Inject reducers seamlessly exactly when you need them.
+- 🛡️ **100% Type-safe:** Written in TypeScript with pristine type inference and autocomplete out of the box.
+- 🪶 **Tiny Footprint:** Minimal addition to your bundle size.
 
 ---
 
 ## ❓ Motivation
 
-In modern SPAs, loading the entire global Redux store on the initial bootstrap causes poor performance and limits code-splitting capabilities. Standard Redux setup requires defining a static `combineReducers` schema upfront.
+Modern frontend applications often suffer from state management boilerplate and bloated global stores. Setting up stores or slices usually requires defining schemas upfront, creating actions, and wiring things together.
 
-`@pitboxdev/dynamic-store-redux` solves this by giving you a way to initialize and inject store slices on demand right when your component mounts. Say goodbye to bloated stores and cumbersome Redux boilerplate — just call `useDynamicSlice(initialState)` and get the same development experience as `useState`, fully connected to the Redux DevTools and a single robust data flow!
+The main motivation behind this library is to **drastically reduce boilerplate and simplify store management for maximum efficiency**.
+
+Whether you need to inject reducers dynamically on the fly or just want the simplicity of `useState` with the power of a scalable Redux global store, this API delivers a seamless, hassle-free experience.
 
 ---
 
@@ -44,11 +58,13 @@ In modern SPAs, loading the entire global Redux store on the initial bootstrap c
   - [Functional updater (`setData`)](#functional-updater-setdata)
   - [Examples](#examples)
 - [`useDynamicSliceWithCleanup`](#usedynamicslicewithcleanup)
+- [`useDynamicSliceActions`](#usedynamicsliceactions)
 - [Imperative helpers (outside React)](#imperative-helpers-outside-react)
 - [Navigation reset](#navigation-reset)
 - [Config options](#config-options)
 - [TypeScript](#typescript)
 - [Full API Reference](#full-api-reference)
+- [Contributing](#contributing)
 - [License](#license)
 
 ---
@@ -62,6 +78,7 @@ In modern SPAs, loading the entire global Redux store on the initial bootstrap c
 | **Dynamic injection** | Slices are registered lazily when the hook first renders |
 | **useState-like API** | `setData(obj)` or `setData((prev) => update)` |
 | **Auto-cleanup** | `useDynamicSliceWithCleanup` resets state on unmount |
+| **Actions without subscription** | `useDynamicSliceActions` returns setters and getter without subscribing |
 | **Navigation reset** | Non-persistent slices reset automatically on route changes |
 | **Imperative helpers** | Call `updateDynamicSlice` / `resetDynamicSlice` from anywhere |
 | **RTK DevTools** | All state is visible in Redux DevTools |
@@ -105,7 +122,7 @@ That's the only setup required. Slices are registered automatically when hooks a
 
 ## `useDynamicSlice`
 
-The main hook. Registers an RTK slice on first render and returns `{ data, setData, resetData }`.
+The main hook. Registers an RTK slice on first render and returns `{ data, setData, resetData, getData }`.
 
 ### Quick Start
 
@@ -118,7 +135,7 @@ interface CounterState {
 }
 
 function Counter() {
-  const { data, setData, resetData } = useDynamicSlice<CounterState>('counter', {
+  const { data, setData, resetData, getData } = useDynamicSlice<CounterState>('counter', {
     initialState: { value: 0, step: 1 },
   });
 
@@ -329,6 +346,33 @@ function EditModal() {
 
 ---
 
+## `useDynamicSliceActions`
+
+Returns `{ setData, resetData, getData }` for a registered slice **without subscribing to state changes**. This is incredibly useful for optimization, or when you just need to access the store state synchronously:
+
+```tsx
+import { useDynamicSliceActions } from '@pitboxdev/dynamic-store-redux';
+
+function ActionButtons() {
+  // Component will NOT re-render when 'counter' state changes
+  const { setData, resetData, getData } = useDynamicSliceActions<CounterState>('counter');
+
+  const logCurrentState = () => {
+    console.log('Current state:', getData());
+  };
+
+  return (
+    <div>
+      <button onClick={() => setData((p) => ({ value: p.value + 1 }))}>Increment</button>
+      <button onClick={resetData}>Reset</button>
+      <button onClick={logCurrentState}>Log Data</button>
+    </div>
+  );
+}
+```
+
+---
+
 ## Imperative helpers (outside React)
 
 All helpers operate on the shared RTK store directly — no hook or component required.
@@ -437,13 +481,19 @@ function RegistrationForm() {
 | `sliceId` | `string` | Unique key for this slice in the shared RTK store |
 | `config` | `SliceConfig<T>` | See [Config options](#config-options) |
 
-Returns `{ data: T, setData, resetData }`.
+Returns `{ data: T, setData, resetData, getData: () => T }`.
 
 ---
 
 ### `useDynamicSliceWithCleanup<T>(sliceId, config)`
 
 Same signature as `useDynamicSlice`. Calls `resetData()` on unmount when `config.resetOnUnmount` is `true`.
+
+---
+
+### `useDynamicSliceActions<T>(sliceId)`
+
+Returns `{ setData, resetData, getData: () => T }` without subscribing to store state updates. Useful for getters or dispatching actions from unrelated components.
 
 ---
 
@@ -495,9 +545,16 @@ Creates a `router/navigate` action. Dispatch it to trigger `resetNonPersistentDy
 | `SliceConfig<T>` | Config type for `useDynamicSlice` |
 | `SetStateAction<T>` | `Partial<T> \| ((prev: T) => Partial<T>)` — setter argument |
 | `UseDynamicSliceReturn<T>` | Return type of `useDynamicSlice` |
+| `UseDynamicSliceActionsReturn<T>` | Return type of `useDynamicSliceActions` |
 | `DynamicSliceRegistryEntry` | Internal registry entry (advanced use) |
 | `RootState` | RTK store root state type |
 | `AppDispatch` | RTK store dispatch type |
+
+---
+
+## Contributing
+
+Contributions, issues, and feature requests are welcome! Feel free to check the [issues page](https://github.com/pitboxdev/dynamic-store-redux/issues).
 
 ---
 

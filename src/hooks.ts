@@ -1,19 +1,75 @@
 import { useRef, useEffect } from "react";
 import type {
-  SliceState,
-  SliceConfig,
-  SetStateAction,
-  UseDynamicSliceReturn,
+    SliceState,
+    SliceConfig,
+    SetStateAction,
+    UseDynamicSliceReturn,
+    UseDynamicSliceActionsReturn,
 } from "./types";
 import {
-  store,
-  injectReducer,
-  getDynamicSliceActions,
-  useAppDispatch,
-  useAppSelector,
+    store,
+    injectReducer,
+    getDynamicSliceActions,
+    getDynamicSliceConfig,
+    useAppDispatch,
+    useAppSelector,
 } from "./store";
 
 // ─── useDynamicSlice ──────────────────────────────────────────────────────────
+
+/**
+ * Hook that returns `setData`, `resetData`, and `getData` for a dynamically
+ * registered RTK slice without subscribing to its state changes.
+ *
+ * Useful for child components that only need to dispatch actions or get current state
+ * without triggering re-renders when the state changes.
+ *
+ * @example
+ * ```tsx
+ * function ResetButton() {
+ *   const { resetData } = useDynamicSliceActions('counter');
+ *   return <button onClick={resetData}>Reset</button>;
+ * }
+ * ```
+ */
+export function useDynamicSliceActions<T extends SliceState>(
+    sliceId: string,
+): UseDynamicSliceActionsReturn<T> {
+    const dispatch = useAppDispatch();
+
+    const getData = (): T => {
+        const currentState = (store.getState() as Record<string, unknown>)[sliceId];
+        if (currentState !== undefined) {
+            return currentState as T;
+        }
+        const config = getDynamicSliceConfig(sliceId);
+        if (!config) {
+            throw new Error(
+                `Dynamic slice "${sliceId}" is not registered. Make sure useDynamicSlice has been called before using useDynamicSliceActions.`,
+            );
+        }
+        return config.initialState as T;
+    };
+
+    const setData = (updater: SetStateAction<T>): void => {
+        const actions = getDynamicSliceActions(sliceId);
+
+        if (typeof updater === "function") {
+            const currentState = getData();
+            const updates = (updater as (prevState: T) => Partial<T>)(currentState);
+            dispatch(actions.setData(updates as Partial<SliceState>));
+        } else {
+            dispatch(actions.setData(updater as Partial<SliceState>));
+        }
+    };
+
+    const resetData = (): void => {
+        const actions = getDynamicSliceActions(sliceId);
+        dispatch(actions.resetData());
+    };
+
+    return { setData, resetData, getData };
+}
 
 /**
  * Hook that dynamically registers an RTK slice and provides a `useState`-like
@@ -49,45 +105,25 @@ import {
  * ```
  */
 export function useDynamicSlice<T extends SliceState>(
-  sliceId: string,
-  config: SliceConfig<T>,
+    sliceId: string,
+    config: SliceConfig<T>,
 ): UseDynamicSliceReturn<T> {
-  const initialized = useRef(false);
+    const initialized = useRef(false);
 
-  if (!initialized.current) {
-    injectReducer(sliceId, config);
-    initialized.current = true;
-  }
-
-  const data = useAppSelector(
-    (state) =>
-      ((state as Record<string, unknown>)[sliceId] ??
-        config.initialState) as T,
-  );
-
-  const dispatch = useAppDispatch();
-
-  const setData = (updater: SetStateAction<T>): void => {
-    const actions = getDynamicSliceActions(sliceId);
-
-    if (typeof updater === "function") {
-      const currentState = (
-        (store.getState() as Record<string, unknown>)[sliceId] ??
-        config.initialState
-      ) as T;
-      const updates = (updater as (prevState: T) => Partial<T>)(currentState);
-      dispatch(actions.setData(updates as Partial<SliceState>));
-    } else {
-      dispatch(actions.setData(updater as Partial<SliceState>));
+    if (!initialized.current) {
+        injectReducer(sliceId, config);
+        initialized.current = true;
     }
-  };
 
-  const resetData = (): void => {
-    const actions = getDynamicSliceActions(sliceId);
-    dispatch(actions.resetData());
-  };
+    const data = useAppSelector(
+        (state) =>
+            ((state as Record<string, unknown>)[sliceId] ??
+                config.initialState) as T,
+    );
 
-  return { data, setData, resetData };
+    const { setData, resetData, getData } = useDynamicSliceActions<T>(sliceId);
+
+    return { data, setData, resetData, getData };
 }
 
 // ─── useDynamicSliceWithCleanup ───────────────────────────────────────────────
@@ -110,19 +146,19 @@ export function useDynamicSlice<T extends SliceState>(
  * ```
  */
 export function useDynamicSliceWithCleanup<T extends SliceState>(
-  sliceId: string,
-  config: SliceConfig<T>,
+    sliceId: string,
+    config: SliceConfig<T>,
 ): UseDynamicSliceReturn<T> {
-  const result = useDynamicSlice<T>(sliceId, config);
+    const result = useDynamicSlice<T>(sliceId, config);
 
-  useEffect(() => {
-    return () => {
-      if (config.resetOnUnmount === true) {
-        result.resetData();
-      }
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [sliceId, config.resetOnUnmount]);
+    useEffect(() => {
+        return () => {
+            if (config.resetOnUnmount === true) {
+                result.resetData();
+            }
+        };
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [sliceId, config.resetOnUnmount]);
 
-  return result;
+    return result;
 }

@@ -30,19 +30,28 @@ export interface SliceConfig<T extends SliceState = SliceState> {
 }
 
 /**
- * Return type of useDynamicSlice / useDynamicSliceWithCleanup.
+ * Return type of useDynamicSliceActions.
  */
-export interface UseDynamicSliceReturn<T extends SliceState> {
-  /** Current slice state. */
-  data: T;
+export interface UseDynamicSliceActionsReturn<T extends SliceState> {
   /**
    * Update the slice state. Accepts either a partial object (merged into
    * current state) or a function that receives the latest state and returns
-   * a partial update — exactly like React's useState setter.
+   * a partial update.
    */
   setData: (updater: SetStateAction<T>) => void;
   /** Reset the slice to its initial state. */
   resetData: () => void;
+  /** Get the current store data synchronously without subscribing to changes. */
+  getData: () => T;
+}
+
+/**
+ * Return type of useDynamicSlice / useDynamicSliceWithCleanup.
+ */
+export interface UseDynamicSliceReturn<T extends SliceState>
+  extends UseDynamicSliceActionsReturn<T> {
+  /** Current slice state. */
+  data: T;
 }
 
 // ─── Internal registry ────────────────────────────────────────────────────────
