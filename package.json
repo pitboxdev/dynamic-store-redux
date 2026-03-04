@@ -1,6 +1,6 @@
 {
   "name": "@pitboxdev/dynamic-store-redux",
-  "version": "0.0.4",
+  "version": "0.0.5",
   "description": "Dynamic slice factory built on top of Redux Toolkit for scalable, useState-like state management",
   "main": "dist/index.js",
   "module": "dist/index.mjs",
