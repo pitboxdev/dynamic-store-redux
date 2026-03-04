@@ -1,4 +1,4 @@
-import { useRef, useEffect } from "react";
+import { useRef, useEffect, useMemo, useCallback } from "react";
 import type {
     SliceState,
     SliceConfig,
@@ -37,7 +37,7 @@ export function useDynamicSliceActions<T extends SliceState>(
 ): UseDynamicSliceActionsReturn<T> {
     const dispatch = useAppDispatch();
 
-    const getData = (): T => {
+    const getData = useCallback((): T => {
         const currentState = (store.getState() as Record<string, unknown>)[sliceId];
         if (currentState !== undefined) {
             return currentState as T;
@@ -49,9 +49,9 @@ export function useDynamicSliceActions<T extends SliceState>(
             );
         }
         return config.initialState as T;
-    };
+    }, [sliceId]);
 
-    const setData = (updater: SetStateAction<T>): void => {
+    const setData = useCallback((updater: SetStateAction<T>): void => {
         const actions = getDynamicSliceActions(sliceId);
 
         if (typeof updater === "function") {
@@ -61,14 +61,17 @@ export function useDynamicSliceActions<T extends SliceState>(
         } else {
             dispatch(actions.setData(updater as Partial<SliceState>));
         }
-    };
+    }, [sliceId, dispatch, getData]);
 
-    const resetData = (): void => {
+    const resetData = useCallback((): void => {
         const actions = getDynamicSliceActions(sliceId);
         dispatch(actions.resetData());
-    };
+    }, [sliceId, dispatch]);
 
-    return { setData, resetData, getData };
+    return useMemo(
+        () => ({ setData, resetData, getData }),
+        [setData, resetData, getData],
+    );
 }
 
 /**
@@ -109,6 +112,9 @@ export function useDynamicSlice<T extends SliceState>(
     config: SliceConfig<T>,
 ): UseDynamicSliceReturn<T> {
     const initialized = useRef(false);
+    // Capture the initial initialState to keep selector fallback stable
+    // even if the user passes a new object literal on every render.
+    const initialRef = useRef(config.initialState);
 
     if (!initialized.current) {
         injectReducer(sliceId, config);
@@ -118,7 +124,7 @@ export function useDynamicSlice<T extends SliceState>(
     const data = useAppSelector(
         (state) =>
             ((state as Record<string, unknown>)[sliceId] ??
-                config.initialState) as T,
+                initialRef.current) as T,
     );
 
     const { setData, resetData, getData } = useDynamicSliceActions<T>(sliceId);
@@ -130,7 +136,10 @@ export function useDynamicSlice<T extends SliceState>(
             }
         };
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [sliceId, config.resetOnUnmount]);
+    }, [sliceId, config.resetOnUnmount, resetData]);
 
-    return { data, setData, resetData, getData };
+    return useMemo(
+        () => ({ data, setData, resetData, getData }),
+        [data, setData, resetData, getData],
+    );
 }
