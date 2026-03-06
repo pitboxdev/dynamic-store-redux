@@ -107,10 +107,11 @@ export function useDynamicSliceActions<T extends SliceState>(
  * }
  * ```
  */
-export function useDynamicSlice<T extends SliceState>(
+export function useDynamicSlice<T extends SliceState, S = T>(
     sliceId: string,
     config: SliceConfig<T>,
-): UseDynamicSliceReturn<T> {
+    selector?: (data: T) => S,
+): UseDynamicSliceReturn<T, S> {
     const initialized = useRef(false);
     // Capture the initial initialState to keep selector fallback stable
     // even if the user passes a new object literal on every render.
@@ -121,11 +122,11 @@ export function useDynamicSlice<T extends SliceState>(
         initialized.current = true;
     }
 
-    const data = useAppSelector(
-        (state) =>
-            ((state as Record<string, unknown>)[sliceId] ??
-                initialRef.current) as T,
-    );
+    const data = useAppSelector((state) => {
+        const sliceData = ((state as Record<string, unknown>)[sliceId] ??
+            initialRef.current) as T;
+        return selector ? selector(sliceData) : (sliceData as unknown as S);
+    });
 
     const { setData, resetData, getData } = useDynamicSliceActions<T>(sliceId);
 

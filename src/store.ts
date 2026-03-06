@@ -60,8 +60,12 @@ const routerResetMiddleware: Middleware = (_api) => (next) => (action) => {
 
 // ─── RTK store ────────────────────────────────────────────────────────────────
 
+// A dummy reducer is required to prevent Redux Toolkit from throwing a
+// "Store does not have a valid reducer" warning on initialization or when empty.
+const dummyReducer: Reducer = (state = null) => state;
+
 export const store = configureStore({
-  reducer: {} as Record<string, Reducer>,
+  reducer: { _dynamicFallback: dummyReducer } as Record<string, Reducer>,
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware().concat(routerResetMiddleware),
 });

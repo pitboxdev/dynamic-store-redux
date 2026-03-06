@@ -72,15 +72,21 @@ Whether you need to inject reducers dynamically on the fly or just want the simp
 
 `@pitboxdev/dynamic-store-redux` lets you create and use RTK slices **on demand** — no boilerplate, no manual `createSlice` / `combineReducers`. Each slice is injected into a single shared RTK store at runtime and accessed through a hook whose API mirrors `useState`.
 
-| Feature | Description |
-|---|---|
-| **Dynamic injection** | Slices are registered lazily when the hook first renders |
-| **useState-like API** | `setData(obj)` or `setData((prev) => update)` |
-| **Auto-cleanup** | Optional `resetOnUnmount` config resets state on unmount |
+| Feature                          | Description                                                             |
+| -------------------------------- | ----------------------------------------------------------------------- |
+| **Dynamic injection**            | Slices are registered lazily when the hook first renders                |
+| **useState-like API**            | `setData(obj)` or `setData((prev) => update)`                           |
+| **Auto-cleanup**                 | Optional `resetOnUnmount` config resets state on unmount                |
 | **Actions without subscription** | `useDynamicSliceActions` returns setters and getter without subscribing |
-| **Navigation reset** | Non-persistent slices reset automatically on route changes |
-| **Imperative helpers** | Call `updateDynamicSlice` / `resetDynamicSlice` from anywhere |
-| **RTK DevTools** | All state is visible in Redux DevTools |
+| **Navigation reset**             | Non-persistent slices reset automatically on route changes              |
+| **Imperative helpers**           | Call `updateDynamicSlice` / `resetDynamicSlice` from anywhere           |
+| **RTK DevTools**                 | All state is visible in Redux DevTools                                  |
+
+---
+
+## 🚀 Live Examples
+
+- **[Basic Demo (CodeSandbox)](https://codesandbox.io/s/github/pitboxdev/dynamic-store-redux/tree/main/examples/basic)** – A comprehensive example featuring theme toggling, cross-branch state updates, and performance optimizations using selectors.
 
 ---
 
@@ -103,8 +109,8 @@ pnpm add @pitboxdev/dynamic-store-redux @reduxjs/toolkit react-redux
 Wrap your application with `<Provider>` using the exported `store`:
 
 ```tsx
-import { Provider } from 'react-redux';
-import { store } from '@pitboxdev/dynamic-store-redux';
+import { Provider } from "react-redux";
+import { store } from "@pitboxdev/dynamic-store-redux";
 
 function App() {
   return (
@@ -126,7 +132,7 @@ The main hook. Registers an RTK slice on first render and returns `{ data, setDa
 ### Quick Start
 
 ```tsx
-import { useDynamicSlice } from '@pitboxdev/dynamic-store-redux';
+import { useDynamicSlice } from "@pitboxdev/dynamic-store-redux";
 
 interface CounterState {
   value: number;
@@ -134,15 +140,19 @@ interface CounterState {
 }
 
 function Counter() {
-  const { data, setData, resetData, getData } = useDynamicSlice<CounterState>('counter', {
-    initialState: { value: 0, step: 1 },
-  });
+  const { data, setData, resetData, getData } = useDynamicSlice<CounterState>(
+    "counter",
+    {
+      initialState: { value: 0, step: 1 },
+    },
+  );
 
   // Object update — simple field override
   const setStep = (step: number) => setData({ step });
 
   // Functional update — always reads the latest state from the store
-  const increment = () => setData((prev) => ({ value: prev.value + prev.step }));
+  const increment = () =>
+    setData((prev) => ({ value: prev.value + prev.step }));
 
   return (
     <div>
@@ -152,6 +162,24 @@ function Counter() {
       <button onClick={resetData}>Reset</button>
     </div>
   );
+}
+```
+
+### Optimizing Re-renders with Selectors
+
+You can pass an optional **selector function** as the third argument to `useDynamicSlice`. This allows your component to subscribe only to a specific part of the slice state, preventing unnecessary re-renders when other fields change.
+
+```tsx
+function ScoreDisplay() {
+  // Component re-renders ONLY when user.score changes.
+  // Changes to user.name or other fields will NOT trigger a re-render.
+  const { data: score } = useDynamicSlice(
+    "user",
+    userConfig,
+    (state) => state.score,
+  );
+
+  return <div>Score: {score}</div>;
 }
 ```
 
@@ -188,17 +216,27 @@ Always prefer the functional form when the new state depends on the old state.
 #### Todo list
 
 ```tsx
-interface Todo { id: string; text: string; completed: boolean }
-interface TodosState { items: Todo[]; filter: 'all' | 'active' | 'completed' }
+interface Todo {
+  id: string;
+  text: string;
+  completed: boolean;
+}
+interface TodosState {
+  items: Todo[];
+  filter: "all" | "active" | "completed";
+}
 
 function TodoList() {
-  const { data, setData, resetData } = useDynamicSlice<TodosState>('todos', {
-    initialState: { items: [], filter: 'all' },
+  const { data, setData, resetData } = useDynamicSlice<TodosState>("todos", {
+    initialState: { items: [], filter: "all" },
   });
 
   const addTodo = (text: string) =>
     setData((prev) => ({
-      items: [...prev.items, { id: Date.now().toString(), text, completed: false }],
+      items: [
+        ...prev.items,
+        { id: Date.now().toString(), text, completed: false },
+      ],
     }));
 
   const toggle = (id: string) =>
@@ -211,29 +249,33 @@ function TodoList() {
   const clearCompleted = () =>
     setData((prev) => ({
       items: prev.items.filter((t) => !t.completed),
-      filter: 'all',
+      filter: "all",
     }));
 
   return (
     <div>
       <input
         onKeyDown={(e) => {
-          if (e.key === 'Enter') {
+          if (e.key === "Enter") {
             addTodo(e.currentTarget.value);
-            e.currentTarget.value = '';
+            e.currentTarget.value = "";
           }
         }}
       />
       <ul>
         {data.items
           .filter((t) => {
-            if (data.filter === 'active') return !t.completed;
-            if (data.filter === 'completed') return t.completed;
+            if (data.filter === "active") return !t.completed;
+            if (data.filter === "completed") return t.completed;
             return true;
           })
           .map((t) => (
             <li key={t.id}>
-              <input type="checkbox" checked={t.completed} onChange={() => toggle(t.id)} />
+              <input
+                type="checkbox"
+                checked={t.completed}
+                onChange={() => toggle(t.id)}
+              />
               {t.text}
             </li>
           ))}
@@ -248,16 +290,24 @@ function TodoList() {
 #### Shopping cart (persistent across navigation)
 
 ```tsx
-interface CartItem { id: string; name: string; price: number; quantity: number }
-interface CartState { items: CartItem[]; discount: number }
+interface CartItem {
+  id: string;
+  name: string;
+  price: number;
+  quantity: number;
+}
+interface CartState {
+  items: CartItem[];
+  discount: number;
+}
 
 function Cart() {
-  const { data, setData } = useDynamicSlice<CartState>('cart', {
+  const { data, setData } = useDynamicSlice<CartState>("cart", {
     initialState: { items: [], discount: 0 },
     persistOnNavigation: true, // won't reset on route change
   });
 
-  const addItem = (product: Omit<CartItem, 'quantity'>) =>
+  const addItem = (product: Omit<CartItem, "quantity">) =>
     setData((prev) => {
       const exists = prev.items.find((i) => i.id === product.id);
       return {
@@ -269,8 +319,9 @@ function Cart() {
       };
     });
 
-  const total = data.items.reduce((sum, i) => sum + i.price * i.quantity, 0)
-    * (1 - data.discount / 100);
+  const total =
+    data.items.reduce((sum, i) => sum + i.price * i.quantity, 0) *
+    (1 - data.discount / 100);
 
   return <div>Total: {total}</div>;
 }
@@ -334,19 +385,22 @@ function LoginForm() {
 Returns `{ setData, resetData, getData }` for a registered slice **without subscribing to state changes**. This is incredibly useful for optimization, or when you just need to access the store state synchronously:
 
 ```tsx
-import { useDynamicSliceActions } from '@pitboxdev/dynamic-store-redux';
+import { useDynamicSliceActions } from "@pitboxdev/dynamic-store-redux";
 
 function ActionButtons() {
   // Component will NOT re-render when 'counter' state changes
-  const { setData, resetData, getData } = useDynamicSliceActions<CounterState>('counter');
+  const { setData, resetData, getData } =
+    useDynamicSliceActions<CounterState>("counter");
 
   const logCurrentState = () => {
-    console.log('Current state:', getData());
+    console.log("Current state:", getData());
   };
 
   return (
     <div>
-      <button onClick={() => setData((p) => ({ value: p.value + 1 }))}>Increment</button>
+      <button onClick={() => setData((p) => ({ value: p.value + 1 }))}>
+        Increment
+      </button>
       <button onClick={resetData}>Reset</button>
       <button onClick={logCurrentState}>Log Data</button>
     </div>
@@ -366,13 +420,13 @@ import {
   resetDynamicSlice,
   resetAllDynamicSlices,
   resetNonPersistentDynamicSlices,
-} from '@pitboxdev/dynamic-store-redux';
+} from "@pitboxdev/dynamic-store-redux";
 
 // Merge data into a slice
-updateDynamicSlice('cart', { discount: 20 });
+updateDynamicSlice("cart", { discount: 20 });
 
 // Reset one slice to its initial state
-resetDynamicSlice('editForm');
+resetDynamicSlice("editForm");
 
 // Reset every registered slice
 resetAllDynamicSlices();
@@ -389,10 +443,10 @@ Non-persistent slices are reset automatically when the router middleware detects
 Dispatch `navigateAction` whenever your app navigates:
 
 ```ts
-import { store, navigateAction } from '@pitboxdev/dynamic-store-redux';
+import { store, navigateAction } from "@pitboxdev/dynamic-store-redux";
 
 // React Router — in your router listener
-store.dispatch(navigateAction('/dashboard'));
+store.dispatch(navigateAction("/dashboard"));
 
 // Next.js App Router — in a layout useEffect
 useEffect(() => {
@@ -406,11 +460,11 @@ The middleware listens for actions whose `type` starts with `router/` or `@@rout
 
 ## Config options
 
-| Option | Type | Default | Description |
-|---|---|---|---|
-| `initialState` | `T` | — | **(required)** Initial values; also used when `resetData()` is called |
-| `persistOnNavigation` | `boolean` | `false` | Skip reset when `resetNonPersistentDynamicSlices()` is called |
-| `resetOnUnmount` | `boolean` | `false` | Auto-reset on unmount |
+| Option                | Type      | Default | Description                                                           |
+| --------------------- | --------- | ------- | --------------------------------------------------------------------- |
+| `initialState`        | `T`       | —       | **(required)** Initial values; also used when `resetData()` is called |
+| `persistOnNavigation` | `boolean` | `false` | Skip reset when `resetNonPersistentDynamicSlices()` is called         |
+| `resetOnUnmount`      | `boolean` | `false` | Auto-reset on unmount                                                 |
 
 ---
 
@@ -424,7 +478,7 @@ import {
   type SliceConfig,
   type SetStateAction,
   type UseDynamicSliceReturn,
-} from '@pitboxdev/dynamic-store-redux';
+} from "@pitboxdev/dynamic-store-redux";
 
 interface FormState {
   firstName: string;
@@ -434,13 +488,13 @@ interface FormState {
 }
 
 const config: SliceConfig<FormState> = {
-  initialState: { firstName: '', lastName: '', age: 0, agreed: false },
+  initialState: { firstName: "", lastName: "", age: 0, agreed: false },
   resetOnUnmount: true,
 };
 
 function RegistrationForm() {
   const { data, setData, resetData }: UseDynamicSliceReturn<FormState> =
-    useDynamicSlice<FormState>('regForm', config);
+    useDynamicSlice<FormState>("regForm", config);
 
   // TypeScript errors on unknown keys:
   // setData({ unknown: true }); ❌
@@ -459,10 +513,10 @@ function RegistrationForm() {
 
 ### `useDynamicSlice<T>(sliceId, config)`
 
-| Parameter | Type | Description |
-|---|---|---|
-| `sliceId` | `string` | Unique key for this slice in the shared RTK store |
-| `config` | `SliceConfig<T>` | See [Config options](#config-options) |
+| Parameter | Type             | Description                                       |
+| --------- | ---------------- | ------------------------------------------------- |
+| `sliceId` | `string`         | Unique key for this slice in the shared RTK store |
+| `config`  | `SliceConfig<T>` | See [Config options](#config-options)             |
 
 Returns `{ data: T, setData, resetData, getData: () => T }`.
 
@@ -481,9 +535,9 @@ Returns `{ setData, resetData, getData: () => T }` without subscribing to store 
 The underlying RTK store. Pass it to `<Provider store={store}>`.
 
 ```ts
-import { store } from '@pitboxdev/dynamic-store-redux';
+import { store } from "@pitboxdev/dynamic-store-redux";
 store.getState(); // read full state
-store.dispatch(navigateAction('/home')); // dispatch any action
+store.dispatch(navigateAction("/home")); // dispatch any action
 ```
 
 ---
@@ -493,8 +547,8 @@ store.dispatch(navigateAction('/home')); // dispatch any action
 Manually inject a slice without rendering a hook. Useful for pre-loading slices at app startup.
 
 ```ts
-import { injectReducer } from '@pitboxdev/dynamic-store-redux';
-injectReducer('cart', { initialState: { items: [], discount: 0 } });
+import { injectReducer } from "@pitboxdev/dynamic-store-redux";
+injectReducer("cart", { initialState: { items: [], discount: 0 } });
 ```
 
 ---
@@ -507,27 +561,27 @@ Creates a `router/navigate` action. Dispatch it to trigger `resetNonPersistentDy
 
 ### Imperative helpers
 
-| Function | Signature | Description |
-|---|---|---|
-| `updateDynamicSlice` | `(sliceId, data) => void` | Merge data into a slice from outside React |
-| `resetDynamicSlice` | `(sliceId) => void` | Reset one slice to its `initialState` |
-| `resetAllDynamicSlices` | `() => void` | Reset every registered slice |
-| `resetNonPersistentDynamicSlices` | `() => void` | Reset slices where `persistOnNavigation` is not `true` |
+| Function                          | Signature                 | Description                                            |
+| --------------------------------- | ------------------------- | ------------------------------------------------------ |
+| `updateDynamicSlice`              | `(sliceId, data) => void` | Merge data into a slice from outside React             |
+| `resetDynamicSlice`               | `(sliceId) => void`       | Reset one slice to its `initialState`                  |
+| `resetAllDynamicSlices`           | `() => void`              | Reset every registered slice                           |
+| `resetNonPersistentDynamicSlices` | `() => void`              | Reset slices where `persistOnNavigation` is not `true` |
 
 ---
 
 ### Exported types
 
-| Type | Description |
-|---|---|
-| `SliceState` | `Record<string, unknown>` — base constraint for state objects |
-| `SliceConfig<T>` | Config type for `useDynamicSlice` |
-| `SetStateAction<T>` | `Partial<T> \| ((prev: T) => Partial<T>)` — setter argument |
-| `UseDynamicSliceReturn<T>` | Return type of `useDynamicSlice` |
-| `UseDynamicSliceActionsReturn<T>` | Return type of `useDynamicSliceActions` |
-| `DynamicSliceRegistryEntry` | Internal registry entry (advanced use) |
-| `RootState` | RTK store root state type |
-| `AppDispatch` | RTK store dispatch type |
+| Type                              | Description                                                   |
+| --------------------------------- | ------------------------------------------------------------- |
+| `SliceState`                      | `Record<string, unknown>` — base constraint for state objects |
+| `SliceConfig<T>`                  | Config type for `useDynamicSlice`                             |
+| `SetStateAction<T>`               | `Partial<T> \| ((prev: T) => Partial<T>)` — setter argument   |
+| `UseDynamicSliceReturn<T>`        | Return type of `useDynamicSlice`                              |
+| `UseDynamicSliceActionsReturn<T>` | Return type of `useDynamicSliceActions`                       |
+| `DynamicSliceRegistryEntry`       | Internal registry entry (advanced use)                        |
+| `RootState`                       | RTK store root state type                                     |
+| `AppDispatch`                     | RTK store dispatch type                                       |
 
 ---
 

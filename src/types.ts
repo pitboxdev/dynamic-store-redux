@@ -48,10 +48,10 @@ export interface UseDynamicSliceActionsReturn<T extends SliceState> {
 /**
  * Return type of useDynamicSlice.
  */
-export interface UseDynamicSliceReturn<T extends SliceState>
+export interface UseDynamicSliceReturn<T extends SliceState, S = T>
   extends UseDynamicSliceActionsReturn<T> {
-  /** Current slice state. */
-  data: T;
+  /** Current slice state (or selected portion of it). */
+  data: S;
 }
 
 // ─── Internal registry ────────────────────────────────────────────────────────
