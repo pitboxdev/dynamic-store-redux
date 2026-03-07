@@ -591,6 +591,18 @@ Contributions, issues, and feature requests are welcome! Feel free to check the 
 
 ---
 
+## � Professional Services
+
+Need help with your React/Redux state architecture? Whether you're looking to integrate this library into a large-scale application, build a complex project from scratch, or require specific feature development, I'm available for hands-on technical collaboration.
+
+- 🏗️ **Custom Project Development:** Building complex React/TypeScript applications from the ground up with scalable architecture.
+- ⚙️ **Integration & Migration:** Seamlessly implementing `@pitboxdev/dynamic-store-redux` into your existing codebase or migrating legacy state solutions.
+- 🛠️ **Feature Development:** Implementing tailored features, refactoring state logic, and optimizing performance for your specific needs.
+
+Contact me: [kiselevm2015@gmail.com](mailto:kiselevm2015@gmail.com)
+
+---
+
 ## License
 
 [MIT](./LICENSE) © Pitboxdev
