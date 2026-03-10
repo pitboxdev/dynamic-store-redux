@@ -439,22 +439,57 @@ resetNonPersistentDynamicSlices();
 
 ## Navigation reset
 
-Non-persistent slices are reset automatically when the router middleware detects a navigation action.
-Dispatch `navigateAction` whenever your app navigates:
+Non-persistent slices (where `persistOnNavigation` is `false` or omitted) are reset automatically when the router middleware detects a navigation event.
 
-```ts
-import { store, navigateAction } from "@pitboxdev/dynamic-store-redux";
+### 🤖 Automatic Detection
+The middleware automatically intercepts actions from popular routing libraries. If you use one of these, you **don't need** to do anything:
+- **`connected-react-router`** (detects `@@router/*`)
+- **`redux-first-history`** (detects `@@router/*`)
+- Any library dispatching actions starting with `router/` or `@@router/`
 
-// React Router — in your router listener
-store.dispatch(navigateAction("/dashboard"));
+### 🛠️ Manual Integration (One-time setup)
+If you are using a router that doesn't sync with Redux (like standard `react-router-dom` or `Next.js`), simply dispatch `navigateAction` once in your root layout:
 
-// Next.js App Router — in a layout useEffect
-useEffect(() => {
-  store.dispatch(navigateAction(pathname));
-}, [pathname]);
+#### React Router Example
+```tsx
+import { useEffect } from "react";
+import { useLocation } from "react-router-dom";
+import { useDispatch } from "react-redux";
+import { navigateAction } from "@pitboxdev/dynamic-store-redux";
+
+function App() {
+  const location = useLocation();
+  const dispatch = useDispatch();
+
+  useEffect(() => {
+    // Trigger automatic cleanup of non-persistent slices
+    dispatch(navigateAction(location.pathname));
+  }, [location.pathname, dispatch]);
+
+  return <Routes>...</Routes>;
+}
 ```
 
-The middleware listens for actions whose `type` starts with `router/` or `@@router`, so it is also compatible with `connected-react-router` and similar libraries out of the box.
+#### Next.js (App Router)
+```tsx
+"use client";
+import { useEffect } from "react";
+import { usePathname } from "next/navigation";
+import { useDispatch } from "react-redux";
+import { navigateAction } from "@pitboxdev/dynamic-store-redux";
+
+export default function RootLayout({ children }) {
+  const pathname = usePathname();
+  const dispatch = useDispatch();
+
+  useEffect(() => {
+    dispatch(navigateAction(pathname));
+  }, [pathname, dispatch]);
+
+  return <>{children}</>;
+}
+```
+
 
 ---
 
