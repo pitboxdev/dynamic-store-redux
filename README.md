@@ -75,10 +75,21 @@ import { useDynamicSlice } from "@pitboxdev/dynamic-store-redux";
 interface UserState { name: string; score: number }
 
 function Profile() {
-  const { data, setData, resetData } = useDynamicSlice<UserState>("user", {
-    initialState: { name: "Guest", score: 0 },
-    persistOnNavigation: true, // Keep state when changing routes
-  });
+  const { 
+    data,       // Current state (or selected part)
+    setData,    // Update state (shallow merge)
+    resetData,  // Reset to initial state
+    getData,    // Sync getter (avoids re-renders in callbacks)
+  } = useDynamicSlice<UserState>(
+    "profile",                     // 1. Slice ID (must be unique)
+    {                              // 2. Configuration Object
+      initialState: { name: "Guest", score: 0 },
+      persistOnNavigation: true,   // Keep state when changing routes
+      resetOnUnmount: true,        // Reset state when component unmounts
+      navigationGroups: ["auth"],  // Tag for selective bulk reset
+    },
+    (state) => state               // 3. Optional Selector (for performance)
+  );
 
   return (
     <div>
@@ -102,28 +113,39 @@ By default, all dynamic slices are **reset automatically** when the route change
 
 | Option | Type | Default | Description |
 | --- | --- | --- | --- |
-| `persistOnNavigation` | `boolean` | `false` | If true, state is NOT reset on route change. |
-| `navigationGroups` | `string[]` | — | Tag slices for selective reset. |
-| `resetOnUnmount` | `boolean` | `false` | Reset state when component unmounts. |
+| `persistOnNavigation` | `boolean` | `false` | If true, state is NOT reset when `resetDynamicSlices("non-persistent")` is called. |
+| `navigationGroups` | `string[]` | — | Tags for grouping slices. Allows for selective bulk resets (e.g., reset all "UI" slices but keep "User" slices). |
+| `resetOnUnmount` | `boolean` | `false` | Automatically reset state when the component calling `useDynamicSlice` is unmounted. |
+
+### Why use `navigationGroups`?
+
+Grouping slices is powerful for managing complex state lifetimes. Instead of resetting slices one by one, you can categorize them:
+
+- **Example 1: The Multi-Step Form**
+  Tag all slices in a checkout flow with `navigationGroups: ["checkout"]`. When the user finishes or cancels, call `resetDynamicSlices(["checkout"])` to clean up everything at once.
+- **Example 2: Global UI State**
+  Tag modals, sidebars, and filters with `navigationGroups: ["ui"]`. You can then reset all UI elements during navigation while keeping data slices alive.
 
 ### Manual & Selective Reset
-
-Trigger the cleanup in your root layout or navigation logic:
 
 ```ts
 import { resetDynamicSlices } from "@pitboxdev/dynamic-store-redux";
 
-// 1. In your router useEffect (scope is now mandatory):
+// 1. Basic navigation cleanup:
+// Resets everything EXCEPT slices with { persistOnNavigation: true }
 resetDynamicSlices("non-persistent"); 
 
-// 2. Skip specific groups during navigation:
-resetDynamicSlices("non-persistent", { excludeGroups: ["multi-step-form"] });
-
-// 3. Deep cleanup (e.g., Logout):
+// 2. The "Logout" pattern:
+// Resets absolutely every dynamic slice to its initial state.
 resetDynamicSlices("all"); 
 
-// 4. Selective reset:
-resetDynamicSlices(["cart", "checkout"]); 
+// 3. Selective reset by Tag:
+// Resets only slices that have "checkout" in their navigationGroups.
+resetDynamicSlices(["checkout"]); 
+
+// 4. Reset with Exclusions:
+// Resets everything but skip slices tagged with "user-settings" or "theme".
+resetDynamicSlices("all", { excludeGroups: ["user-settings", "theme"] });
 ```
 
 ---
@@ -153,7 +175,7 @@ import {
 } from "@pitboxdev/dynamic-store-redux";
 
 updateDynamicSlice("user", { name: "New Name" });
-resetDynamicSlize("user");
+resetDynamicSlice("user");
 resetDynamicSlices("all", { excludeGroups: ["auth"] });
 ```
 
