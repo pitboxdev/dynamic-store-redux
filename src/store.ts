@@ -36,33 +36,8 @@ function createDynamicSlice<T extends SliceState>(
 
 // Internal reference to the singleton store once it's created
 let store: ReturnType<typeof configureStore> | undefined;
-let storeConfig: DynamicStoreConfig = { 
-  autoResetOnNavigation: false,
-  routerActionPrefixes: ["@@router/", "router/"]
-};
+let storeConfig: DynamicStoreConfig = {};
 
-const routerResetMiddleware: Middleware = (_api) => (next) => (action) => {
-  const result = next(action);
-
-  const prefixes = storeConfig.routerActionPrefixes || ["@@router/", "router/"];
-
-  if (
-    storeConfig.autoResetOnNavigation &&
-    action !== null &&
-    typeof action === "object" &&
-    "type" in action &&
-    typeof (action as { type: unknown }).type === "string"
-  ) {
-    const type = (action as { type: string }).type;
-    const isRouterAction = prefixes.some((prefix) => type.startsWith(prefix));
-    
-    if (isRouterAction) {
-      resetDynamicSlices("non-persistent");
-    }
-  }
-
-  return result;
-};
 
 /**
  * Creates and configures the global Redux store for dynamic slices.
@@ -72,7 +47,6 @@ export function createDynamicStore(config: DynamicStoreConfig = {}) {
   storeConfig = { 
     ...storeConfig, 
     ...config,
-    routerActionPrefixes: config.routerActionPrefixes || storeConfig.routerActionPrefixes 
   };
 
   const rootReducer = combineReducers({
@@ -83,7 +57,7 @@ export function createDynamicStore(config: DynamicStoreConfig = {}) {
   store = configureStore({
     reducer: rootReducer as unknown as Reducer,
     middleware: (getDefaultMiddleware) => {
-      const middleware = getDefaultMiddleware().concat(routerResetMiddleware);
+      const middleware = getDefaultMiddleware();
       if (storeConfig.extraMiddlewares) {
         return middleware.concat(storeConfig.extraMiddlewares);
       }

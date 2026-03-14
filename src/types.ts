@@ -38,16 +38,6 @@ export interface ResetOptions {
 
 /** Configuration for creating the global store. */
 export interface DynamicStoreConfig {
-  /** 
-   * If true, automatically resets non-persistent slices when router-related 
-   * actions are dispatched. Default is false.
-   */
-  autoResetOnNavigation?: boolean;
-  /**
-   * Custom prefixes for router actions that trigger reset.
-   * Default: ['@@router/', 'router/']
-   */
-  routerActionPrefixes?: string[];
   /**
    * Static reducers that should always be present in the store.
    */

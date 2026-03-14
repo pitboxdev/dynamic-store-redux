@@ -22,17 +22,16 @@
 
 ## 🚀 Live Demo
 
-- **[CodeSandbox Example](https://codesandbox.io/s/github/pitboxdev/dynamic-store-redux/tree/main/examples/basic)** – See it in action: Theme toggling, cross-branch state updates, and complex reset scenarios.
+- **[Basic Demo](https://codesandbox.io/s/github/pitboxdev/dynamic-store-redux/tree/main/examples/basic)** – Theme toggling, cross-branch state updates, and complex reset scenarios.
 
 ---
 
-## ⚡ Features
+## ⚡ Simplicity First
 
-- 🛠️ **DX First:** Zero boilerplate. API mirrors `useState` ergonomics.
-- 🧹 **Auto-Cleanup:** Optional store resets on navigation (with exclusions) or unmount.
-- 🔄 **Code-Splitting Ready:** Inject reducers lazily exactly when they are needed.
-- 🛡️ **100% Type-safe:** Written in TypeScript with pristine inference.
-- 🪶 **Tiny:** Zero impact on performance, leverages your existing RTK setup.
+```tsx
+const { data, setData } = useDynamicSlice('user', { initialState });
+```
+**That's it.** No actions, no reducers, no boilerplate. Just `useState` ergonomics with the full power of Redux.
 
 ---
 
@@ -51,17 +50,15 @@ import { Provider } from "react-redux";
 import { createDynamicStore } from "@pitboxdev/dynamic-store-redux";
 
 // Basic initialization
-const store = createDynamicStore({ autoResetOnNavigation: true });
+const store = createDynamicStore();
 
-// OR: Advanced initialization with all features
+// OR: Advanced initialization
 const advancedStore = createDynamicStore({
-  autoResetOnNavigation: true,
   staticReducers: { 
     auth: authReducer, 
     settings: settingsReducer 
   },
   extraMiddlewares: [loggerMiddleware],
-  routerActionPrefixes: ['@@router/', 'NAVIGATE/'],
   preloadedState: { settings: { theme: 'dark' } },
   devTools: true
 });
@@ -107,7 +104,7 @@ function Profile() {
 
 ## 🧹 Cleanup & Navigation
 
-By default, all dynamic slices are **reset automatically** when the route changes. You can control this behavior per-slice.
+By default, dynamic slices are persistent. You can trigger cleanup manually when the route changes or when a component unmounts.
 
 ### Config Options
 
@@ -148,6 +145,24 @@ resetDynamicSlices(["checkout"]);
 resetDynamicSlices("all", { excludeGroups: ["user-settings", "theme"] });
 ```
 
+#### ⚓ Router Integration
+
+To trigger cleanup **only on transitions** (skipping the first render), use a ref guard:
+
+```tsx
+const isFirstRender = useRef(true);
+
+useEffect(() => {
+  if (isFirstRender.current) {
+    isFirstRender.current = false;
+    return;
+  }
+  resetDynamicSlices("non-persistent");
+}, [location.pathname]);
+```
+
+
+
 ---
 
 ## 🛠️ Advanced Features
@@ -164,19 +179,6 @@ Use `useDynamicSliceActions` to get setters and getters without subscribing to s
 
 ```tsx
 const { setData, getData } = useDynamicSliceActions<UserState>("user");
-```
-
-### Outside React (Imperative)
-```ts
-import { 
-  updateDynamicSlice, 
-  resetDynamicSlice, 
-  resetDynamicSlices 
-} from "@pitboxdev/dynamic-store-redux";
-
-updateDynamicSlice("user", { name: "New Name" });
-resetDynamicSlice("user");
-resetDynamicSlices("all", { excludeGroups: ["auth"] });
 ```
 
 ---
