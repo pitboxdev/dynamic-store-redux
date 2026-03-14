@@ -7,12 +7,12 @@ import type {
     UseDynamicSliceActionsReturn,
 } from "./types";
 import {
-    store,
     injectReducer,
     getDynamicSliceActions,
     getDynamicSliceConfig,
     useAppDispatch,
     useAppSelector,
+    getDynamicStoreState,
 } from "./store";
 
 // ─── useDynamicSlice ──────────────────────────────────────────────────────────
@@ -38,7 +38,7 @@ export function useDynamicSliceActions<T extends SliceState>(
     const dispatch = useAppDispatch();
 
     const getData = useCallback((): T => {
-        const currentState = (store.getState() as Record<string, unknown>)[sliceId];
+        const currentState = (getDynamicStoreState() as Record<string, unknown>)[sliceId];
         if (currentState !== undefined) {
             return currentState as T;
         }

@@ -1,6 +1,5 @@
 // ─── RTK store ────────────────────────────────────────────────────────────────
-export { store, useAppDispatch, useAppSelector } from "./store";
-export type { RootState, AppDispatch } from "./store";
+export { createDynamicStore, useAppDispatch, useAppSelector } from "./store";
 
 // ─── Dynamic slice hooks ──────────────────────────────────────────────────────
 export {
@@ -13,9 +12,7 @@ export {
   injectReducer,
   updateDynamicSlice,
   resetDynamicSlice,
-  resetAllDynamicSlices,
-  resetNonPersistentDynamicSlices,
-  navigateAction,
+  resetDynamicSlices,
 } from "./store";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -25,5 +22,8 @@ export type {
   SliceConfig,
   UseDynamicSliceReturn,
   UseDynamicSliceActionsReturn,
+  ResetScope,
+  ResetOptions,
+  DynamicStoreConfig,
   DynamicSliceRegistryEntry,
 } from "./types";

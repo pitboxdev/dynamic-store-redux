@@ -1,9 +1,11 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import { Provider } from 'react-redux';
-// The only setup required is importing the store and wrapping the App
-import { store } from '@pitboxdev/dynamic-store-redux';
+import { createDynamicStore } from '@pitboxdev/dynamic-store-redux';
 import App from './App';
+
+// Initialize the store and enable auto-reset for navigation actions
+const store = createDynamicStore({ autoResetOnNavigation: true });
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
